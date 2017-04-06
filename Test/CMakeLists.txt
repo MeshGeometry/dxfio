@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8.6)
 # Define target name
 set (TARGET_NAME DxfTest)
 
-add_executable(DxfTest main.cpp dxf_io_tests.cpp ${CORE_SRC})
+add_executable(DxfTest main.cpp dxf_io_tests.cpp)
 
 #needs some wrangling to get urho source to work
 add_definitions(-DMINI_URHO)

@@ -9,8 +9,9 @@
 #include "IO/File.h"
 #include "IO/FileSystem.h"
 
-using namespace Urho3D;
+#include "Dxf/DxfReader.h"
 
+using namespace Urho3D;
 
 //commmon elements
 Context* ctx = new Context();
@@ -27,12 +28,20 @@ TEST(Basic, CheckTestFiles)
 
 }
 
+//TEST(Basic, ReadLines)
+//{
+//	File* f = new File(ctx, baseTestFile, FILE_READ);
+//
+//	while (!f->IsEof())
+//	{
+//		//std::cout << f->ReadLine().CString() << std::endl;
+//	}
+//}
+
 TEST(Basic, ReadLines)
 {
-	File* f = new File(ctx, baseTestFile, FILE_READ);
+	DxfReader* reader = new DxfReader(ctx, baseTestFile);
 
-	while (!f->IsEof())
-	{
-		std::cout << f->ReadLine().CString() << std::endl;
-	}
+	int res = reader->ReadGroupCode();
+
 }
