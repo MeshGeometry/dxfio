@@ -56,10 +56,14 @@ String DxfReader::ReadGroupName()
 	String l = source_->ReadLine();
 
 	//trim? To upper?
-
 	if (l == "SECTION")
 	{
 		URHO3D_LOGINFO("Parsing section");
+	}
+	else if (l == "ENDSEC")
+	{
+		URHO3D_LOGINFO("Finished parsing section");
+		ReadGroupCode();
 	}
 	else
 	{
