@@ -29,5 +29,10 @@ TEST(Basic, CheckTestFiles)
 
 TEST(Basic, ReadLines)
 {
+	File* f = new File(ctx, baseTestFile, FILE_READ);
 
+	while (!f->IsEof())
+	{
+		std::cout << f->ReadLine().CString() << std::endl;
+	}
 }
