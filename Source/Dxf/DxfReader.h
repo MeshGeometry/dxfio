@@ -47,15 +47,16 @@ public:
 
 	//some helpers
 	bool Is(LinePair pair, int code, String name);
+	bool IsEnd(LinePair pair);
 	bool IsType(LinePair pair, int code, VariantType type);
 
 protected:
 
 	File* source_;
 
-	VariantMap header_;
-	VariantMap classes_;
-	VariantMap tables_;
-	VariantMap blocks_;
-	VariantMap entities_;
+	VariantVector header_;
+	VariantVector classes_;
+	VariantVector tables_;
+	VariantVector blocks_;
+	VariantVector entities_;
 };

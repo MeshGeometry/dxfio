@@ -18,6 +18,7 @@ Context* ctx = new Context();
 FileSystem* fs = new FileSystem(ctx);
 
 //testing files
+String multiObject = "../../Test/Test_Dxf.dxf";
 String baseTestFile = "../../Test/most_basic.dxf";
 
 
@@ -25,12 +26,14 @@ TEST(Basic, CheckTestFiles)
 {
 	bool res = fs->FileExists(baseTestFile);
 	EXPECT_EQ(res, true);
+	res = fs->FileExists(multiObject);
+	EXPECT_EQ(res, true);
 
 }
 
 TEST(Basic, ReadLines)
 {
-	DxfReader* reader = new DxfReader(ctx, baseTestFile);
+	DxfReader* reader = new DxfReader(ctx, multiObject);
 
 	//int res = reader->ReadGroupCode();
 	int res = reader->Parse();

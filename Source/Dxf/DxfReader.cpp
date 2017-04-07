@@ -84,6 +84,25 @@ bool DxfReader::IsType(LinePair pair, int code, VariantType type)
 	return res;
 }
 
+bool DxfReader::IsEnd(LinePair pair)
+{
+	bool res = false;
+
+	//check for actual file end
+	if (pair.first_ == -100 || source_->IsEof())
+	{
+		res = true;
+	}
+
+	//check end of file return code
+	if (pair.first_ == 0 && pair.second_ == "EOF")
+	{
+		res = true;
+	}
+
+	return res;
+}
+
 bool DxfReader::Parse()
 {
 	while (!source_->IsEof())
@@ -124,7 +143,7 @@ bool DxfReader::Parse()
 		}
 
 		// don't read past the official EOF sign
-		else if (Is(nextPair, 0, "EOF")) {
+		else if (IsEnd(nextPair)) {
 			URHO3D_LOGINFO("---END OF DXF FILE---");
 			break;
 		}
@@ -137,46 +156,128 @@ bool DxfReader::Parse()
 void DxfReader::SkipSection()
 {
 	URHO3D_LOGINFO("Skipping section...");
+
+	LinePair nextPair = GetNextLinePair();
+
+	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC"))
+	{
+		nextPair = GetNextLinePair();
+	}
 }
 
 void DxfReader::ParseHeader()
 {
 	URHO3D_LOGINFO("Parsing header...");
+
+	SkipSection();
 }
 
 void DxfReader::ParseEntities()
 {
 	URHO3D_LOGINFO("Parsing entities...");
+
+	SkipSection();
 }
 
 void DxfReader::ParseBlocks()
 {
 	URHO3D_LOGINFO("Parsing blocks...");
+
+	LinePair nextPair = GetNextLinePair();
+
+	//call individual block parsing loop
+	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC")) {
+		if (Is(nextPair, 0, "BLOCK")) {
+			ParseBlock();
+			continue;
+		}
+	}
 }
 
 void DxfReader::ParseBlock()
 {
 	URHO3D_LOGINFO("Parsing single block...");
+
+	LinePair nextPair = GetNextLinePair();
+
+	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK")) {
+
+		//we store all block info in variant map
+		VariantMap block;
+		
+		//get the info
+		switch (nextPair.first_) {
+		case 2:
+			block["Name"] = nextPair.second_.GetString();
+			break;
+		case 10:
+			block["Base_X"] = nextPair.second_.GetFloat();
+			break;
+		case 20:
+			block["Base_Y"] = nextPair.second_.GetFloat();
+			break;
+		case 30:
+			block["Base_Z"] = nextPair.second_.GetFloat();
+			break;
+		}
+
+		//done with parsing the block. Push to stack
+		blocks_.Push(block);
+
+		//continue with parsing rest of content
+		if (Is(nextPair, 0, "POLYLINE")) {
+			ParsePolyLine();
+			continue;
+		}
+
+		//skipping this case
+		if (Is(nextPair, 0, "INSERT")) {
+			URHO3D_LOGERROR("DXF: INSERT within a BLOCK not currently supported; skipping");
+			while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK"))
+			{
+				nextPair = GetNextLinePair();
+			}
+			break;
+		}
+
+		//parse these types
+		else if (Is(nextPair, 0, "3DFACE") || Is(nextPair, 0, "LINE") || Is(nextPair, 0, "3DLINE")) {
+			//http://sourceforge.net/tracker/index.php?func=detail&aid=2970566&group_id=226462&atid=1067632
+			Parse3DFace();
+			continue;
+		}
+	
+		//recurse
+		nextPair = GetNextLinePair();
+	}
 }
 
 void DxfReader::ParseInsertion()
 {
 	URHO3D_LOGINFO("Parsing insertion...");
+
+	SkipSection();
 }
 
 void DxfReader::ParsePolyLine()
 {
 	URHO3D_LOGINFO("Parsing polyline...");
+
+	SkipSection();
 }
 
 void DxfReader::ParsePolyLineVertex()
 {
 	URHO3D_LOGINFO("Parsing polyline vertex...");
+
+	SkipSection();
 }
 
 void DxfReader::Parse3DFace()
 {
 	URHO3D_LOGINFO("Parsing 3D face...");
+
+	SkipSection();
 }
 
 
