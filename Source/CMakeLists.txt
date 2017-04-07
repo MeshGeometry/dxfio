@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 2.8.6)
 
+if (UNIX)
+    find_package (Threads REQUIRED)
+endif ()
 
 file(GLOB CORE_SRC
     "./Container/*.h"
@@ -28,3 +31,7 @@ source_group("Dxf" FILES ${DXFIO_SRC})
 
 add_definitions(-DMINI_URHO -DURHO3D_LOGGING)
 set_target_properties(dxfio PROPERTIES LINKER_LANGUAGE CXX)
+
+if (UNIX)
+    target_link_libraries (dxfio ${CMAKE_THREAD_LIBS_INIT})
+endif ()
