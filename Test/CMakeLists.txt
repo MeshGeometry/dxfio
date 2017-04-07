@@ -1,6 +1,10 @@
 # Set minimum version
 cmake_minimum_required (VERSION 2.8.6)
 
+if (UNIX)
+    find_package (Threads REQUIRED)
+endif ()
+
 # Define target name
 set (TARGET_NAME DxfTest)
 
@@ -22,3 +26,7 @@ if (MSVC)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD")
     SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 endif()
+
+if (UNIX)
+    target_link_libraries (DxfTest ${CMAKE_THREAD_LIBS_INIT})
+endif ()
