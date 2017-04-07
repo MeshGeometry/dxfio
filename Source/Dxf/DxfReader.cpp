@@ -37,92 +37,148 @@ DxfReader::DxfReader(Context* context, String path) : Object(context)
 
 }
 
-int DxfReader::ReadGroupCode()
+LinePair DxfReader::GetNextLinePair()
 {
-	//check for end of file
-	if (source_->IsEof()) { 
-		return -1; 
-	}
+	LinePair nextPair;
 	
-	//grab the next line
-	String l = source_->ReadLine().Trimmed();
+	//initialize with error code:
+	nextPair.first_ = -100; //use this as error since DXF has some negative codes...
+	nextPair.second_ = Variant();
 
-	URHO3D_LOGINFO("Code Value: " + l);
-
-	//get the code
-	int code = ToInt(l);
-
-	//switch over group codes
-	switch (code)
+	//read the code
+	if (!source_->IsEof())
 	{
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-	case 5:
-	case 6:
-	case 7:
-	case 8:
-	case 9:
-		//URHO3D_LOGINFO("Starting or ending a group. Code " + String(code));
-		ReadGroupName();
-		break;
-	default:
-		//URHO3D_LOGINFO("Group code " + String(code) + " not implemented.");
-		break;
+		nextPair.first_ = ToInt(source_->ReadLine().Trimmed());
 	}
 
-}
-
-String DxfReader::ReadGroupName()
-{
-	//check for end of file
-	if (source_->IsEof()) { 
-		return ""; 
-	}
-
-	//grab the next line
-	String l = source_->ReadLine().Trimmed();
-
-	URHO3D_LOGINFO("Group Name: " + l);
-
-	//in any case, try to read the value of the group
-	ReadGroupValue();
-
-	return l;
-}
-
-Variant DxfReader::ReadGroupValue()
-{
-	//check for end of file
-	if (source_->IsEof()) {
-		return "";
-	}
-
-	//grab the next line
-	int lastLength = 0;
-	String l = source_->ReadLine();
-	lastLength = l.Length();
-	l = l.Trimmed();
-	URHO3D_LOGINFO("Group Value: " + l);
-
-	//parse group content until we encounter a digit between 0 -9
-	int counter = 0;
-	int topLevelIndex = GetStringListIndex(l.CString(), topLevelCodes, -1);
-	while (topLevelIndex < 0 && counter < 10)
+	//read the value
+	if (!source_->IsEof())
 	{
-		l = source_->ReadLine();
-		lastLength = l.Length();
-		l = l.Trimmed();
-		URHO3D_LOGINFO("Group Value: " + l);
-		topLevelIndex = GetStringListIndex(l.CString(), topLevelCodes, -1);
-		counter++;
+		nextPair.second_ = source_->ReadLine().Trimmed();
 	}
 
-	//back up by a line and call group code
-	source_->Seek(source_->GetPosition() - lastLength);
-	ReadGroupCode();
+	return nextPair;
 }
+
+bool DxfReader::Is(LinePair pair, int code, String name)
+{
+	bool res = false;
+
+	if (pair.first_ == code && pair.second_ == name)
+	{
+		res = true;
+	}
+
+	return res;
+}
+
+bool DxfReader::IsType(LinePair pair, int code, VariantType type)
+{
+	bool res = false;
+
+	if (pair.first_ == code && pair.second_.GetType() == type)
+	{
+		res = true;
+	}
+
+	return res;
+}
+
+bool DxfReader::Parse()
+{
+	while (!source_->IsEof())
+	{
+		LinePair nextPair = GetNextLinePair();
+
+		//debug
+		URHO3D_LOGINFO("Line Pair: " + String(nextPair.first_) + " : " + nextPair.second_.GetString());
+
+		// blocks table - these 'build blocks' are later (in ENTITIES)
+		// referenced an included via INSERT statements.
+		if (Is(nextPair, 2, "BLOCKS")) {
+			ParseBlocks();
+			continue;
+		}
+
+		// primary entity table
+		if (Is(nextPair, 2, "ENTITIES")) {
+			ParseEntities();
+			continue;
+		}
+
+		// skip unneeded sections entirely to avoid any problems with them
+		// alltogether.
+		else if (Is(nextPair, 2, "CLASSES") || Is(nextPair, 2, "TABLES")) {
+			SkipSection();
+			continue;
+		}
+
+		else if (Is(nextPair, 2, "HEADER")) {
+			ParseHeader();
+			continue;
+		}
+
+		// comments
+		else if (nextPair.first_ == 999) {
+		URHO3D_LOGINFO("DXF comment");
+		}
+
+		// don't read past the official EOF sign
+		else if (Is(nextPair, 0, "EOF")) {
+			URHO3D_LOGINFO("---END OF DXF FILE---");
+			break;
+		}
+
+	}
+
+	return true;
+}
+
+void DxfReader::SkipSection()
+{
+	URHO3D_LOGINFO("Skipping section...");
+}
+
+void DxfReader::ParseHeader()
+{
+	URHO3D_LOGINFO("Parsing header...");
+}
+
+void DxfReader::ParseEntities()
+{
+	URHO3D_LOGINFO("Parsing entities...");
+}
+
+void DxfReader::ParseBlocks()
+{
+	URHO3D_LOGINFO("Parsing blocks...");
+}
+
+void DxfReader::ParseBlock()
+{
+	URHO3D_LOGINFO("Parsing single block...");
+}
+
+void DxfReader::ParseInsertion()
+{
+	URHO3D_LOGINFO("Parsing insertion...");
+}
+
+void DxfReader::ParsePolyLine()
+{
+	URHO3D_LOGINFO("Parsing polyline...");
+}
+
+void DxfReader::ParsePolyLineVertex()
+{
+	URHO3D_LOGINFO("Parsing polyline vertex...");
+}
+
+void DxfReader::Parse3DFace()
+{
+	URHO3D_LOGINFO("Parsing 3D face...");
+}
+
+
 
 

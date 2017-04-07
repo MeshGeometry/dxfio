@@ -32,6 +32,7 @@ TEST(Basic, ReadLines)
 {
 	DxfReader* reader = new DxfReader(ctx, baseTestFile);
 
-	int res = reader->ReadGroupCode();
+	//int res = reader->ReadGroupCode();
+	int res = reader->Parse();
 
 }
