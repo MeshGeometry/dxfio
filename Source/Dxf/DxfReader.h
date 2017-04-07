@@ -19,6 +19,7 @@ public:
 
 	int ReadGroupCode();
 	String ReadGroupName();
+	Variant ReadGroupValue();
 
 protected:
 

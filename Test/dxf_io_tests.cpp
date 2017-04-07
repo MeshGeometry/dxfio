@@ -18,7 +18,7 @@ Context* ctx = new Context();
 FileSystem* fs = new FileSystem(ctx);
 
 //testing files
-String baseTestFile = "../../Test/Test_Dxf.dxf";
+String baseTestFile = "../../Test/most_basic.dxf";
 
 
 TEST(Basic, CheckTestFiles)
@@ -27,16 +27,6 @@ TEST(Basic, CheckTestFiles)
 	EXPECT_EQ(res, true);
 
 }
-
-//TEST(Basic, ReadLines)
-//{
-//	File* f = new File(ctx, baseTestFile, FILE_READ);
-//
-//	while (!f->IsEof())
-//	{
-//		//std::cout << f->ReadLine().CString() << std::endl;
-//	}
-//}
 
 TEST(Basic, ReadLines)
 {

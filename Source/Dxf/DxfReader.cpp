@@ -2,6 +2,21 @@
 #include "Core/StringUtils.h"
 #include "IO/Log.h"
 
+//these codes signal that a new group is starting or ending
+static const char* topLevelCodes[] = 
+{
+	"0",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9"
+};
+
 
 DxfReader::DxfReader(Context* context, String path) : Object(context)
 {
@@ -25,10 +40,14 @@ DxfReader::DxfReader(Context* context, String path) : Object(context)
 int DxfReader::ReadGroupCode()
 {
 	//check for end of file
-	if (source_->IsEof()) { return -1; }
+	if (source_->IsEof()) { 
+		return -1; 
+	}
 	
 	//grab the next line
-	String l = source_->ReadLine();
+	String l = source_->ReadLine().Trimmed();
+
+	URHO3D_LOGINFO("Code Value: " + l);
 
 	//get the code
 	int code = ToInt(l);
@@ -37,11 +56,20 @@ int DxfReader::ReadGroupCode()
 	switch (code)
 	{
 	case 0:
-		URHO3D_LOGINFO("Starting or ending a group.");
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+	case 9:
+		//URHO3D_LOGINFO("Starting or ending a group. Code " + String(code));
 		ReadGroupName();
 		break;
 	default:
-		URHO3D_LOGINFO("Group code {0} not implemented.", code);
+		//URHO3D_LOGINFO("Group code " + String(code) + " not implemented.");
 		break;
 	}
 
@@ -50,27 +78,51 @@ int DxfReader::ReadGroupCode()
 String DxfReader::ReadGroupName()
 {
 	//check for end of file
-	if (source_->IsEof()) { return ""; }
+	if (source_->IsEof()) { 
+		return ""; 
+	}
 
 	//grab the next line
-	String l = source_->ReadLine();
+	String l = source_->ReadLine().Trimmed();
 
-	//trim? To upper?
-	if (l == "SECTION")
-	{
-		URHO3D_LOGINFO("Parsing section");
-	}
-	else if (l == "ENDSEC")
-	{
-		URHO3D_LOGINFO("Finished parsing section");
-		ReadGroupCode();
-	}
-	else
-	{
-		URHO3D_LOGINFO("Group name {0} not implemented.", l);
-	}
+	URHO3D_LOGINFO("Group Name: " + l);
+
+	//in any case, try to read the value of the group
+	ReadGroupValue();
 
 	return l;
+}
+
+Variant DxfReader::ReadGroupValue()
+{
+	//check for end of file
+	if (source_->IsEof()) {
+		return "";
+	}
+
+	//grab the next line
+	int lastLength = 0;
+	String l = source_->ReadLine();
+	lastLength = l.Length();
+	l = l.Trimmed();
+	URHO3D_LOGINFO("Group Value: " + l);
+
+	//parse group content until we encounter a digit between 0 -9
+	int counter = 0;
+	int topLevelIndex = GetStringListIndex(l.CString(), topLevelCodes, -1);
+	while (topLevelIndex < 0 && counter < 10)
+	{
+		l = source_->ReadLine();
+		lastLength = l.Length();
+		l = l.Trimmed();
+		URHO3D_LOGINFO("Group Value: " + l);
+		topLevelIndex = GetStringListIndex(l.CString(), topLevelCodes, -1);
+		counter++;
+	}
+
+	//back up by a line and call group code
+	source_->Seek(source_->GetPosition() - lastLength);
+	ReadGroupCode();
 }
 
 

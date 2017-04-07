@@ -27,5 +27,5 @@ add_library(dxfio ${CORE_SRC} ${DXFIO_SRC})
 source_group("Common" FILES ${CORE_SRC})
 source_group("Dxf" FILES ${DXFIO_SRC})
 
-add_definitions(-DMINI_URHO)
+add_definitions(-DMINI_URHO -DURHO3D_LOGGING)
 set_target_properties(dxfio PROPERTIES LINKER_LANGUAGE CXX)
