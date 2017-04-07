@@ -21,7 +21,6 @@ file(GLOB DXFIO_SRC
 
 
 include_directories("./")
-
 add_library(dxfio ${CORE_SRC} ${DXFIO_SRC})
 
 source_group("Common" FILES ${CORE_SRC})

@@ -42,7 +42,7 @@ public:
 	void ParseBlock();
 	void ParseInsertion();
 	void ParsePolyLine();
-	void ParsePolyLineVertex();
+	void ParsePolyLineVertex(VariantMap& polyline);
 	void Parse3DFace();
 
 	//some helpers
@@ -50,13 +50,18 @@ public:
 	bool IsEnd(LinePair pair);
 	bool IsType(LinePair pair, int code, VariantType type);
 
+	//debug
+	void SaveRaw(String path);
+	void SaveVariantVector(Deserializer* dest, const VariantVector& vector, int indent);
+	void SaveVariantMap(Deserializer* dest, const VariantMap& map, int indent);
+
+	VariantVector GetBlocks() { return blocks_; };
+
 protected:
 
 	File* source_;
 
-	VariantVector header_;
-	VariantVector classes_;
-	VariantVector tables_;
+	//all data is stored in blocks
+	//schema for this is WIP...
 	VariantVector blocks_;
-	VariantVector entities_;
 };
