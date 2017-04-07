@@ -20,6 +20,7 @@ FileSystem* fs = new FileSystem(ctx);
 //testing files
 String multiObject = "../../Test/Test_Dxf.dxf";
 String baseTestFile = "../../Test/most_basic.dxf";
+String box = "../../Test/2D_Box.dxf";
 
 
 
@@ -133,12 +134,14 @@ TEST(Basic, CheckTestFiles)
 	EXPECT_EQ(res, true);
 	res = fs->FileExists(multiObject);
 	EXPECT_EQ(res, true);
+	res = fs->FileExists(box);
+	EXPECT_EQ(res, true);
 
 }
 
 TEST(Basic, ReadLines)
 {
-	DxfReader* reader = new DxfReader(ctx, multiObject);
+	DxfReader* reader = new DxfReader(ctx, box);
 
 	//int res = reader->ReadGroupCode();
 	int res = reader->Parse();

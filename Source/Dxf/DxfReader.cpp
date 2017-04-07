@@ -224,13 +224,13 @@ void DxfReader::ParseBlock()
 			block["Name"] = nextPair.second_.GetString();
 			break;
 		case 10:
-			block["Base_X"] = nextPair.second_.GetFloat();
+			block["Base_X"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 20:
-			block["Base_Y"] = nextPair.second_.GetFloat();
+			block["Base_Y"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 30:
-			block["Base_Z"] = nextPair.second_.GetFloat();
+			block["Base_Z"] = ToFloat(nextPair.second_.GetString());
 			break;
 		}
 
@@ -291,27 +291,27 @@ void DxfReader::ParseInsertion()
 			break;
 			//translation
 		case 10:
-			insertion["Position_X"] = nextPair.second_.GetFloat();
+			insertion["Position_X"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 20:
-			insertion["Position_Y"] = nextPair.second_.GetFloat();
+			insertion["Position_Y"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 30:
-			insertion["Position_Z"] = nextPair.second_.GetFloat();
+			insertion["Position_Z"] = ToFloat(nextPair.second_.GetString());
 			break;
 			// scaling
 		case 41:
-			insertion["Scale_X"] = nextPair.second_.GetFloat();
+			insertion["Scale_X"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 42:
-			insertion["Scale_Y"] = nextPair.second_.GetFloat();
+			insertion["Scale_Y"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 43:
-			insertion["Scale_Z"] = nextPair.second_.GetFloat();
+			insertion["Scale_Z"] = ToFloat(nextPair.second_.GetString());
 			break;
 			// rotation angle
 		case 50:
-			insertion["Angle"] = nextPair.second_.GetFloat();
+			insertion["Angle"] = ToFloat(nextPair.second_.GetString());
 			break;
 		}
 
@@ -360,17 +360,17 @@ void DxfReader::ParsePolyLine()
 			// polyface mesh or 'just' a line.
 		case 70:
 			
-			polyline["Flags"] = nextPair.second_.GetUInt();
+			polyline["Flags"] = ToUInt(nextPair.second_.GetString());
 			break;
 
 			// optional number of vertices
 		case 71:
-			polyline["NumVerticesHint"] = nextPair.second_.GetUInt();
+			polyline["NumVerticesHint"] = ToUInt(nextPair.second_.GetString());
 			break;
 
 			// optional number of faces
 		case 72:
-			polyline["NumFacesHint"] = nextPair.second_.GetUInt();
+			polyline["NumFacesHint"] = ToUInt(nextPair.second_.GetString());
 			break;
 
 			// 8 specifies the layer on which this line is placed on
@@ -414,20 +414,20 @@ void DxfReader::ParsePolyLineVertex(VariantMap& polyline)
 			break;
 
 		case 70:
-			flags = nextPair.second_.GetUInt();
+			flags = ToUInt(nextPair.second_.GetString());
 			break;
 
 			// VERTEX COORDINATES
 		case 10: 
-			v.x_ = nextPair.second_.GetFloat();
+			v.x_ = ToFloat(nextPair.second_.GetString());
 			break;
 
 		case 20: 
-			v.y_ = nextPair.second_.GetFloat();
+			v.y_ = ToFloat(nextPair.second_.GetString());
 			break;
 
 		case 30: 
-			v.z_ = nextPair.second_.GetFloat();
+			v.z_ = ToFloat(nextPair.second_.GetString());
 			break;
 
 			// POLYFACE vertex indices
@@ -439,7 +439,7 @@ void DxfReader::ParsePolyLineVertex(VariantMap& polyline)
 				URHO3D_LOGERROR("DXF: more than 4 indices per face not supported; ignoring");
 				break;
 			}
-			indices.Push(nextPair.second_.GetUInt());
+			indices.Push(ToUInt(nextPair.second_.GetString()));
 			break;
 
 			// color
@@ -448,19 +448,19 @@ void DxfReader::ParsePolyLineVertex(VariantMap& polyline)
 			break;
 		};
 
-		//add to vertex list
-		VariantVector* verts = polyline["Vertices"].GetVariantVectorPtr();
-		assert(verts);
-		verts->Push(v);
-
-		//add to face list
-		VariantVector* faces = polyline["Faces"].GetVariantVectorPtr();
-		assert(faces);
-		faces->Push(indices);
-
 		//recurse
 		nextPair = GetNextLinePair();
 	}
+
+	//add to vertex list
+	VariantVector* verts = polyline["Vertices"].GetVariantVectorPtr();
+	assert(verts);
+	verts->Push(v);
+
+	//add to face list
+	VariantVector* faces = polyline["Faces"].GetVariantVectorPtr();
+	assert(faces);
+	faces->Push(indices);
 }
 
 void DxfReader::Parse3DFace()
@@ -498,73 +498,73 @@ void DxfReader::Parse3DFace()
 
 			// x position of the first corner
 		case 10: 
-			vip[0].x_ = nextPair.second_.GetFloat();
+			vip[0].x_ = ToFloat(nextPair.second_.GetString());
 			b[2] = true;
 			break;
 
 			// y position of the first corner
 		case 20: 
-			vip[0].y_ = nextPair.second_.GetFloat();
+			vip[0].y_ = ToFloat(nextPair.second_.GetString());
 			b[2] = true;
 			break;
 
 			// z position of the first corner
 		case 30: 
-			vip[0].z_ = nextPair.second_.GetFloat();
+			vip[0].z_ = ToFloat(nextPair.second_.GetString());
 			b[2] = true;
 			break;
 
 			// x position of the second corner
 		case 11: 
-			vip[1].x_ = nextPair.second_.GetFloat();
+			vip[1].x_ = ToFloat(nextPair.second_.GetString());
 			b[3] = true;
 			break;
 
 			// y position of the second corner
 		case 21: 
-			vip[1].y_ = nextPair.second_.GetFloat();
+			vip[1].y_ = ToFloat(nextPair.second_.GetString());
 			b[3] = true;
 			break;
 
 			// z position of the second corner
 		case 31: 
-			vip[1].z_ = nextPair.second_.GetFloat();
+			vip[1].z_ = ToFloat(nextPair.second_.GetString());
 			b[3] = true;
 			break;
 
 			// x position of the third corner
 		case 12:
-			vip[2].x_ = nextPair.second_.GetFloat();
+			vip[2].x_ = ToFloat(nextPair.second_.GetString());
 			b[0] = true;
 			break;
 
 			// y position of the third corner
 		case 22: 
-			vip[2].y_ = nextPair.second_.GetFloat();
+			vip[2].y_ = ToFloat(nextPair.second_.GetString());
 			b[0] = true;
 			break;
 
 			// z position of the third corner
 		case 32: 
-			vip[2].z_ = nextPair.second_.GetFloat();
+			vip[2].z_ = ToFloat(nextPair.second_.GetString());
 			b[0] = true;
 			break;
 
 			// x position of the fourth corner
 		case 13: 
-			vip[3].x_ = nextPair.second_.GetFloat();
+			vip[3].x_ = ToFloat(nextPair.second_.GetString());
 			b[1] = true;
 			break;
 
 			// y position of the fourth corner
 		case 23: 
-			vip[3].y_ = nextPair.second_.GetFloat();
+			vip[3].y_ = ToFloat(nextPair.second_.GetString());
 			b[1] = true;
 			break;
 
 			// z position of the fourth corner
 		case 33: 
-			vip[3].z_ = nextPair.second_.GetFloat();
+			vip[3].z_ = ToFloat(nextPair.second_.GetString());
 			b[1] = true;
 			break;
 
