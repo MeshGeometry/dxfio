@@ -171,7 +171,7 @@ void DxfReader::ParseEntities()
 	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC")) {
 
 		if (Is(nextPair, 0, "POLYLINE")) {
-			ParsePolyLine();
+			ParsePolyLine(nextPair);
 			continue;
 		}
 
@@ -213,38 +213,36 @@ void DxfReader::ParseBlock()
 
 	LinePair nextPair = GetNextLinePair();
 
-	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK")) {
+	//we store all block info in variant map
+	VariantMap block;
+	block["Insertions"] = VariantVector();
+	block["Lines"] = VariantVector();
+	blocks_.Push(block);
 
-		//we store all block info in variant map
-		VariantMap block;
+	//get reference to last block
+	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
+
+	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK")) {
 		
 		//get the info
 		switch (nextPair.first_) {
 		case 2:
-			block["Name"] = nextPair.second_.GetString();
+			(*currBlock)["Name"] = nextPair.second_.GetString();
 			break;
 		case 10:
-			block["Base_X"] = ToFloat(nextPair.second_.GetString());
+			(*currBlock)["Base_X"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 20:
-			block["Base_Y"] = ToFloat(nextPair.second_.GetString());
+			(*currBlock)["Base_Y"] = ToFloat(nextPair.second_.GetString());
 			break;
 		case 30:
-			block["Base_Z"] = ToFloat(nextPair.second_.GetString());
+			(*currBlock)["Base_Z"] = ToFloat(nextPair.second_.GetString());
 			break;
 		}
 
-		//make sure to add empty insertion vector. This gets filled in ParseInsertions
-		//do the same with the lines.
-		block["Insertions"] = VariantVector();
-		block["Lines"] = VariantVector();
-
-		//done with parsing the block. Push to stack
-		blocks_.Push(block);
-
 		//continue with parsing rest of content
 		if (Is(nextPair, 0, "POLYLINE")) {
-			ParsePolyLine();
+			ParsePolyLine(nextPair);
 			continue;
 		}
 
@@ -325,11 +323,11 @@ void DxfReader::ParseInsertion()
 	insertions->Push(insertion);
 }
 
-void DxfReader::ParsePolyLine()
+void DxfReader::ParsePolyLine(LinePair& nextPair)
 {
 	URHO3D_LOGINFO("Parsing polyline...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	//get reference to last block
 	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
@@ -344,12 +342,13 @@ void DxfReader::ParsePolyLine()
 
 		if (Is(nextPair, 0, "VERTEX")) {
 
-			ParsePolyLineVertex(polyline);
+			ParsePolyLineVertex(polyline, nextPair);
 
 			//not exactly sure what to do here...
 			if (Is(nextPair, 0, "SEQEND")) {
 				break;
 			}
+
 
 			continue;
 		}
@@ -389,11 +388,11 @@ void DxfReader::ParsePolyLine()
 	lines->Push(polyline);
 }
 
-void DxfReader::ParsePolyLineVertex(VariantMap& polyline)
+void DxfReader::ParsePolyLineVertex(VariantMap& polyline, LinePair& nextPair)
 {
 	URHO3D_LOGINFO("Parsing polyline vertex...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	unsigned int flags = 0;
 	VariantVector indices;

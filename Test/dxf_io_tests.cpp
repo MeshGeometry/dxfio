@@ -27,7 +27,7 @@ String box = "../../Test/2D_Box.dxf";
 //utils
 void SaveVariantVector(File* dest, const VariantVector& vector, String indent);
 void SaveVariantMap(File* dest, const VariantMap& map, String indent);
-void SaveRaw(String path, VariantVector value);
+void SaveRaw(String path, Variant value);
 
 
 void SaveVariantVector(File* dest, const VariantVector& vector, String indent)
@@ -37,6 +37,8 @@ void SaveVariantVector(File* dest, const VariantVector& vector, String indent)
 		return;
 	}
 
+	indent += "   ";
+
 	for (VariantVector::ConstIterator i = vector.Begin(); i != vector.End(); i++)
 	{
 		VariantType type = i->GetType();
@@ -44,15 +46,13 @@ void SaveVariantVector(File* dest, const VariantVector& vector, String indent)
 		switch (type)
 		{
 		case VAR_VARIANTMAP:
-			indent += "   ";
 			SaveVariantMap(dest, i->GetVariantMap(), indent);
 			break;
 		case VAR_VARIANTVECTOR:
-			indent += "   ";
 			SaveVariantVector(dest, i->GetVariantVector(), indent);
 			break;
 		default:
-			String currLine = i->ToString();
+			String currLine = indent + i->ToString();
 			dest->WriteLine(currLine);
 			break;
 		}
@@ -67,6 +67,8 @@ void SaveVariantMap(File* dest, const VariantMap& map, String indent)
 		return;
 	}
 
+	indent += "   ";
+
 	for (VariantMap::ConstIterator i = map.Begin(); i != map.End(); i++)
 	{
 		VariantType type = i->second_.GetType();
@@ -74,15 +76,13 @@ void SaveVariantMap(File* dest, const VariantMap& map, String indent)
 		switch (type)
 		{
 		case VAR_VARIANTMAP:
-			indent += "   ";
 			SaveVariantMap(dest, i->second_.GetVariantMap(), indent);
 			break;
 		case VAR_VARIANTVECTOR:
-			indent += "   ";
 			SaveVariantVector(dest, i->second_.GetVariantVector(), indent);
 			break;
 		default:
-			String currLine = i->second_.ToString();
+			String currLine = indent + i->second_.ToString();
 			dest->WriteLine(currLine);
 			break;
 		}
@@ -90,7 +90,7 @@ void SaveVariantMap(File* dest, const VariantMap& map, String indent)
 	}
 }
 
-void SaveRaw(String path, VariantVector value)
+void SaveRaw(String path, Variant value)
 {
 	FileSystem* fs = new FileSystem(ctx);
 	File* dest = new File(ctx, path, FILE_WRITE);
@@ -101,27 +101,23 @@ void SaveRaw(String path, VariantVector value)
 	}
 
 	String indent = "";
-	for (VariantVector::ConstIterator i = value.Begin(); i != value.End(); i++)
+	VariantType type = value.GetType();
+
+	switch (type)
 	{
-		VariantType type = i->GetType();
-
-		switch (type)
-		{
-		case VAR_VARIANTMAP:
-			indent += "   ";
-			SaveVariantMap(dest, i->GetVariantMap(), indent);
-			break;
-		case VAR_VARIANTVECTOR:
-			indent += "   ";
-			SaveVariantVector(dest, i->GetVariantVector(), indent);
-			break;
-		default:
-			String currLine = i->ToString();
-			dest->WriteLine(currLine);
-			break;
-		}
-
+	case VAR_VARIANTMAP:
+		SaveVariantMap(dest, value.GetVariantMap(), indent);
+		break;
+	case VAR_VARIANTVECTOR:
+		SaveVariantVector(dest, value.GetVariantVector(), indent);
+		break;
+	default:
+		String currLine = indent + value.ToString();
+		dest->WriteLine(currLine);
+		break;
 	}
+
+
 
 	dest->Close();
 
@@ -137,6 +133,34 @@ TEST(Basic, CheckTestFiles)
 	res = fs->FileExists(box);
 	EXPECT_EQ(res, true);
 
+}
+
+TEST(Basic, Output)
+{
+	VariantVector test;
+	test.Push("Start");
+	test.Push(1.0);
+	test.Push(2.0);
+	test.Push(3.0);
+
+	VariantVector vec;
+	vec.Push(4.0);
+	vec.Push(5.0);
+	vec.Push(6.0);
+
+	VariantMap map;
+	map["A"] = "my";
+	map["B"] = "var";
+	map["C"] = "map";
+
+	vec.Push(map);
+
+	test.Push(vec);
+
+	test.Push("End");
+
+
+	SaveRaw("../../Test/VarTest.txt", test);
 }
 
 TEST(Basic, ReadLines)
