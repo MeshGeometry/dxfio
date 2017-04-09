@@ -188,6 +188,11 @@ void DxfReader::ParseEntities()
 			continue;
 		}
 
+		else if (Is(nextPair, 0, "POINT")) {
+			ParsePoint();
+			continue;
+		}
+
 		//parse these types
 		else if (Is(nextPair, 0, "3DFACE") || Is(nextPair, 0, "LINE") || Is(nextPair, 0, "3DLINE")) {
 			//http://sourceforge.net/tracker/index.php?func=detail&aid=2970566&group_id=226462&atid=1067632
@@ -255,6 +260,11 @@ void DxfReader::ParseBlock()
 		//continue with parsing rest of content
 		if (Is(nextPair, 0, "POLYLINE")) {
 			ParsePolyLine();
+			continue;
+		}
+
+		else if (Is(nextPair, 0, "POINT")) {
+			ParsePoint();
 			continue;
 		}
 
@@ -403,6 +413,78 @@ void DxfReader::ParsePolyLine()
 	VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
 	assert(lines);
 	lines->Push(polyline);
+}
+
+void DxfReader::ParsePoint()
+{
+	URHO3D_LOGINFO("Parsing point...");
+
+	nextPair = GetNextLinePair();
+
+	//get reference to last block
+	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
+
+	//write type
+	//(*currBlock)["000_TYPE"] = "Polyline";
+
+	//store polyline line data in variantmap
+	VariantMap point;
+	point["000_TYPE"] = "POINT";
+	point["Position"] = Vector3();
+	point["Layer"] = "Default";
+
+	Vector3 v;
+
+	while (!IsEnd(nextPair)) {
+
+		if (nextPair.first_ == 0) { // SEQEND or another VERTEX
+			break;
+		}
+
+		switch (nextPair.first_)
+		{
+		case 8:
+			point["Layer"] = nextPair.second_.ToString();
+			break;
+
+		case 70:
+			break;
+
+			// VERTEX COORDINATES
+		case 10:
+			v.x_ = ToFloat(nextPair.second_.GetString());
+			break;
+
+		case 20:
+			v.y_ = ToFloat(nextPair.second_.GetString());
+			break;
+
+		case 30:
+			v.z_ = ToFloat(nextPair.second_.GetString());
+			break;
+
+			// POLYFACE vertex indices
+		case 71:
+		case 72:
+		case 73:
+		case 74:
+			break;
+
+			// color
+		case 62:
+			URHO3D_LOGERROR("Ignoring vertex color...");
+			break;
+		};
+
+		//recurse
+		nextPair = GetNextLinePair();
+	}
+
+	point["Position"] = v;
+
+	VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
+	assert(lines);
+	lines->Push(point);
 }
 
 void DxfReader::ParsePolyLineVertex(VariantMap& polyline)

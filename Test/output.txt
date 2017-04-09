@@ -39,6 +39,21 @@
 ======VECTOR 6 END
 ======VECTOR 6 START
 ========MAP 8 START
+========POINT
+========-16.2394 33.602 0
+========Default
+========MAP 8 END
+========MAP 8 START
+========POINT
+========-28.6649 38.2728 0
+========Default
+========MAP 8 END
+========MAP 8 START
+========POINT
+========-27.1849 17.6283 0
+========Default
+========MAP 8 END
+========MAP 8 START
 ========POLYLINE
 ==========VECTOR 10 START
 ==========-29.0942 -15.3748 -12.6668
