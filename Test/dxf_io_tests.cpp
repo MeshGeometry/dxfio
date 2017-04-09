@@ -22,8 +22,6 @@ String multiObject = "../../Test/Test_Dxf.dxf";
 String baseTestFile = "../../Test/most_basic.dxf";
 String box = "../../Test/2D_Box.dxf";
 
-
-
 //utils
 void SaveVariantVector(File* dest, const VariantVector& vector, String indent);
 void SaveVariantMap(File* dest, const VariantMap& map, String indent);
@@ -37,7 +35,9 @@ void SaveVariantVector(File* dest, const VariantVector& vector, String indent)
 		return;
 	}
 
-	indent += "   ";
+	indent += "==";
+
+	dest->WriteLine(indent + "VECTOR " + String(indent.Length()) + " START");
 
 	for (VariantVector::ConstIterator i = vector.Begin(); i != vector.End(); i++)
 	{
@@ -58,6 +58,8 @@ void SaveVariantVector(File* dest, const VariantVector& vector, String indent)
 		}
 
 	}
+
+	dest->WriteLine(indent + "VECTOR " + String(indent.Length()) + " END");
 }
 
 void SaveVariantMap(File* dest, const VariantMap& map, String indent)
@@ -67,7 +69,9 @@ void SaveVariantMap(File* dest, const VariantMap& map, String indent)
 		return;
 	}
 
-	indent += "   ";
+	indent += "==";
+
+	dest->WriteLine(indent + "MAP " + String(indent.Length()) + " START");
 
 	for (VariantMap::ConstIterator i = map.Begin(); i != map.End(); i++)
 	{
@@ -88,6 +92,8 @@ void SaveVariantMap(File* dest, const VariantMap& map, String indent)
 		}
 
 	}
+
+	dest->WriteLine(indent + "MAP " + String(indent.Length()) + " END");
 }
 
 void SaveRaw(String path, Variant value)
@@ -165,7 +171,7 @@ TEST(Basic, Output)
 
 TEST(Basic, ReadLines)
 {
-	DxfReader* reader = new DxfReader(ctx, box);
+	DxfReader* reader = new DxfReader(ctx, multiObject);
 
 	//int res = reader->ReadGroupCode();
 	int res = reader->Parse();

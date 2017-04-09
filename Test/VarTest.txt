@@ -1,11 +1,15 @@
-   Start
-   1
-   2
-   3
-   4
-   5
-   6
-      my
-      var
-      map
-   End
+==VECTOR 2 START
+==Start
+==1
+==2
+==3
+==4
+==5
+==6
+====MAP 4 START
+====my
+====var
+====map
+====MAP 4 END
+==End
+==VECTOR 2 END

@@ -2,6 +2,9 @@
 #include "Core/StringUtils.h"
 #include "IO/Log.h"
 
+int currLineNumber = 0;
+LinePair nextPair;
+
 DxfReader::DxfReader(Context* context, String path) : Object(context)
 {
 	FileSystem* fs = new FileSystem(GetContext());
@@ -23,7 +26,7 @@ DxfReader::DxfReader(Context* context, String path) : Object(context)
 
 LinePair DxfReader::GetNextLinePair()
 {
-	LinePair nextPair;
+	//LinePair nextPair;
 	
 	//initialize with error code:
 	nextPair.first_ = -100; //use this as error since DXF has some negative codes...
@@ -40,6 +43,8 @@ LinePair DxfReader::GetNextLinePair()
 	{
 		nextPair.second_ = source_->ReadLine().Trimmed();
 	}
+
+	currLineNumber += 2;
 
 	return nextPair;
 }
@@ -91,10 +96,10 @@ bool DxfReader::Parse()
 {
 	while (!source_->IsEof())
 	{
-		LinePair nextPair = GetNextLinePair();
+		nextPair = GetNextLinePair();
 
 		//debug
-		URHO3D_LOGINFO("Line Pair: " + String(nextPair.first_) + " : " + nextPair.second_.GetString());
+		//URHO3D_LOGINFO("Line Pair: " + String(nextPair.first_) + " : " + nextPair.second_.GetString());
 
 		// blocks table - these 'build blocks' are later (in ENTITIES)
 		// referenced an included via INSERT statements.
@@ -141,7 +146,7 @@ void DxfReader::SkipSection()
 {
 	URHO3D_LOGINFO("Skipping section...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC"))
 	{
@@ -160,18 +165,21 @@ void DxfReader::ParseEntities()
 {
 	URHO3D_LOGINFO("Parsing entities...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	//create a block and push it to list
 	VariantMap block;
+	block["000_TYPE"] = "BLOCK";
 	block["Name"] = "$GENERIC_BLOCK_NAME";
+	block["Insertions"] = VariantVector();
+	block["Lines"] = VariantVector();
 	blocks_.Push(block);
 
 	//proceed
 	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC")) {
 
 		if (Is(nextPair, 0, "POLYLINE")) {
-			ParsePolyLine(nextPair);
+			ParsePolyLine();
 			continue;
 		}
 
@@ -196,13 +204,15 @@ void DxfReader::ParseBlocks()
 {
 	URHO3D_LOGINFO("Parsing blocks...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	//call individual block parsing loop
 	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC")) {
 		if (Is(nextPair, 0, "BLOCK")) {
 			ParseBlock();
-			continue;
+		}
+		else {
+			nextPair = GetNextLinePair();
 		}
 	}
 }
@@ -211,10 +221,12 @@ void DxfReader::ParseBlock()
 {
 	URHO3D_LOGINFO("Parsing single block...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	//we store all block info in variant map
 	VariantMap block;
+	//debug
+	block["000_TYPE"] = "BLOCK";
 	block["Insertions"] = VariantVector();
 	block["Lines"] = VariantVector();
 	blocks_.Push(block);
@@ -222,7 +234,7 @@ void DxfReader::ParseBlock()
 	//get reference to last block
 	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
 
-	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK")) {
+	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK") && !Is(nextPair, 0, "ENDSEC")) {
 		
 		//get the info
 		switch (nextPair.first_) {
@@ -242,7 +254,7 @@ void DxfReader::ParseBlock()
 
 		//continue with parsing rest of content
 		if (Is(nextPair, 0, "POLYLINE")) {
-			ParsePolyLine(nextPair);
+			ParsePolyLine();
 			continue;
 		}
 
@@ -272,13 +284,14 @@ void DxfReader::ParseInsertion()
 {
 	URHO3D_LOGINFO("Parsing insertion...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	//insertions are par to of the block structure
 	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
 
 	//we store all insertion info in variant map
 	VariantMap insertion;
+	insertion["000_TYPE"] = "INSERTION";
 
 	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDBLK")) {
 
@@ -323,7 +336,7 @@ void DxfReader::ParseInsertion()
 	insertions->Push(insertion);
 }
 
-void DxfReader::ParsePolyLine(LinePair& nextPair)
+void DxfReader::ParsePolyLine()
 {
 	URHO3D_LOGINFO("Parsing polyline...");
 
@@ -332,8 +345,12 @@ void DxfReader::ParsePolyLine(LinePair& nextPair)
 	//get reference to last block
 	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
 
+	//write type
+	//(*currBlock)["000_TYPE"] = "Polyline";
+
 	//store polyline line data in variantmap
 	VariantMap polyline;
+	polyline["000_TYPE"] = "POLYLINE";
 	polyline["Vertices"] = VariantVector();
 	polyline["Faces"] = VariantVector();
 
@@ -342,7 +359,7 @@ void DxfReader::ParsePolyLine(LinePair& nextPair)
 
 		if (Is(nextPair, 0, "VERTEX")) {
 
-			ParsePolyLineVertex(polyline, nextPair);
+			ParsePolyLineVertex(polyline);
 
 			//not exactly sure what to do here...
 			if (Is(nextPair, 0, "SEQEND")) {
@@ -388,7 +405,7 @@ void DxfReader::ParsePolyLine(LinePair& nextPair)
 	lines->Push(polyline);
 }
 
-void DxfReader::ParsePolyLineVertex(VariantMap& polyline, LinePair& nextPair)
+void DxfReader::ParsePolyLineVertex(VariantMap& polyline)
 {
 	URHO3D_LOGINFO("Parsing polyline vertex...");
 
@@ -466,13 +483,14 @@ void DxfReader::Parse3DFace()
 {
 	URHO3D_LOGINFO("Parsing 3D face...");
 
-	LinePair nextPair = GetNextLinePair();
+	nextPair = GetNextLinePair();
 
 	//get reference to last block
 	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
 
 	//store polyline line data in variantmap
 	VariantMap polyline;
+	polyline["000_TYPE"] = "3DFACE";
 	polyline["Vertices"] = VariantVector();
 	polyline["Faces"] = VariantVector();
 
@@ -492,7 +510,7 @@ void DxfReader::Parse3DFace()
 
 			// 8 specifies the layer
 		case 8:
-			polyline["Layer"] = nextPair.second_.GetString();
+			//polyline["Layer"] = nextPair.second_.GetString();
 			break;
 
 			// x position of the first corner

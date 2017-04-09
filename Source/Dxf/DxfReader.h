@@ -41,8 +41,8 @@ public:
 	void ParseBlocks();
 	void ParseBlock();
 	void ParseInsertion();
-	void ParsePolyLine(LinePair& line);
-	void ParsePolyLineVertex(VariantMap& polyline, LinePair& line);
+	void ParsePolyLine();
+	void ParsePolyLineVertex(VariantMap& polyline);
 	void Parse3DFace();
 
 	//some helpers
