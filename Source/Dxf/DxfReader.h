@@ -51,18 +51,30 @@ public:
 	bool IsEnd(LinePair pair);
 	bool IsType(LinePair pair, int code, VariantType type);
 
-	//debug
-	void SaveRaw(String path);
-	void SaveVariantVector(Deserializer* dest, const VariantVector& vector, int indent);
-	void SaveVariantMap(Deserializer* dest, const VariantMap& map, int indent);
-
+	//getters
 	VariantVector GetBlocks() { return blocks_; };
+	VariantVector GetInsertions() { return insertions_; };
+	VariantVector GetMeshes() { return meshes_; };
+	VariantVector GetPolylines() { return polylines_; };
+	VariantVector GetPoints() { return points_; };
 
 protected:
 
 	File* source_;
 
-	//all data is stored in blocks
-	//schema for this is WIP...
+	//Blocks are logical chunks of a drawing (dxf) file.
+	//Often, they just define base points for model space, paper space by specifying a base point, scale.
+	//However, they CAN have entitites (i.e. polylines, points, etc) embedded in them. I have not seen this in any test files,
+	//but it is allowed. We don't support it currently.
 	VariantVector blocks_;
+
+	//Insertions seem to be a short way to specify an instance of an entity with pos,rot, and scale.
+	//I think they are appended to entities (or blocks) but I am not sure. I haven't seen one yet.
+	VariantVector insertions_;
+
+	//These are the things we want. 
+	VariantVector meshes_;
+	VariantVector polylines_;
+	VariantVector points_;
+
 };

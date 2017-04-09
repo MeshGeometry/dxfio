@@ -1,0 +1,17 @@
+==VECTOR 2 START
+====MAP 4 START
+====POINT
+====-16.2394 33.602 0
+====Default
+====MAP 4 END
+====MAP 4 START
+====POINT
+====-28.6649 38.2728 0
+====Default
+====MAP 4 END
+====MAP 4 START
+====POINT
+====-27.1849 17.6283 0
+====Default
+====MAP 4 END
+==VECTOR 2 END

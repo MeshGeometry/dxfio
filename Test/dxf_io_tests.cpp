@@ -176,7 +176,16 @@ TEST(Basic, ReadLines)
 	//int res = reader->ReadGroupCode();
 	int res = reader->Parse();
 
-	String pathOut = "../../Test/output.txt";
+	String pathOut = "../../Test/blocks_out.txt";
 	SaveRaw(pathOut, reader->GetBlocks());
+
+	pathOut = "../../Test/meshes_out.txt";
+	SaveRaw(pathOut, reader->GetMeshes());
+
+	pathOut = "../../Test/polys_out.txt";
+	SaveRaw(pathOut, reader->GetPolylines());
+
+	pathOut = "../../Test/points_out.txt";
+	SaveRaw(pathOut, reader->GetPoints());
 
 }

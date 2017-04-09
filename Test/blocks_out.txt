@@ -1,0 +1,43 @@
+==VECTOR 2 START
+====MAP 4 START
+====BLOCK
+======VECTOR 6 START
+======VECTOR 6 END
+======VECTOR 6 START
+======VECTOR 6 END
+====*Model_Space
+====0
+====0
+====0
+====MAP 4 END
+====MAP 4 START
+====BLOCK
+======VECTOR 6 START
+======VECTOR 6 END
+======VECTOR 6 START
+======VECTOR 6 END
+====*Paper_Space
+====0
+====0
+====0
+====MAP 4 END
+====MAP 4 START
+====BLOCK
+======VECTOR 6 START
+======VECTOR 6 END
+======VECTOR 6 START
+======VECTOR 6 END
+====*Paper_Space0
+====0
+====0
+====0
+====MAP 4 END
+====MAP 4 START
+====BLOCK
+====$GENERIC_BLOCK_NAME
+======VECTOR 6 START
+======VECTOR 6 END
+======VECTOR 6 START
+======VECTOR 6 END
+====MAP 4 END
+==VECTOR 2 END

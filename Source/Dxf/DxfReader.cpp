@@ -341,9 +341,10 @@ void DxfReader::ParseInsertion()
 	}
 
 	//done with parsing the insertion. Push to stack
-	VariantVector* insertions = (*currBlock)["Insertions"].GetVariantVectorPtr();
-	assert(insertions);
-	insertions->Push(insertion);
+	//VariantVector* insertions = (*currBlock)["Insertions"].GetVariantVectorPtr();
+	//assert(insertions);
+	//insertions->Push(insertion);
+	insertions_.Push(insertion);
 }
 
 void DxfReader::ParsePolyLine()
@@ -410,9 +411,18 @@ void DxfReader::ParsePolyLine()
 	}
 
 	//add to line list
-	VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
-	assert(lines);
-	lines->Push(polyline);
+	//VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
+	//assert(lines);
+	//lines->Push(polyline);
+
+	//if polyline has indices, then it is a mesh. Otherwise it is just a polyline
+	bool hasIndices = polyline["Faces"].GetVariantVector().Size() > 3 ? true : false;
+	if (hasIndices) {
+		meshes_.Push(polyline);
+	}
+	else {
+		polylines_.Push(polyline);
+	}
 }
 
 void DxfReader::ParsePoint()
@@ -482,9 +492,11 @@ void DxfReader::ParsePoint()
 
 	point["Position"] = v;
 
-	VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
-	assert(lines);
-	lines->Push(point);
+	//VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
+	//assert(lines);
+	//lines->Push(point);
+
+	points_.Push(point);
 }
 
 void DxfReader::ParsePolyLineVertex(VariantMap& polyline)
@@ -592,7 +604,7 @@ void DxfReader::Parse3DFace()
 
 			// 8 specifies the layer
 		case 8:
-			//polyline["Layer"] = nextPair.second_.GetString();
+			polyline["Layer"] = nextPair.second_.GetString();
 			break;
 
 			// x position of the first corner
@@ -688,11 +700,12 @@ void DxfReader::Parse3DFace()
 	polyline["Vertices"] = pVerts;
 
 	//add to line list
-	VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
-	assert(lines);
-	lines->Push(polyline);
+	//VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
+	//assert(lines);
+	//lines->Push(polyline);
 
-	//probably need to add some stuff here...
+
+	polylines_.Push(polyline);
 }
 
 
