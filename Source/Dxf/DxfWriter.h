@@ -16,7 +16,7 @@ URHO3D_API class DxfWriter : public Object
 	URHO3D_OBJECT(DxfWriter, Object);
 
 public:
-	DxfWriter(Context* context, String path);
+	DxfWriter(Context* context);
 	~DxfWriter() {};
 
 	/**************************************************************************
@@ -24,33 +24,34 @@ public:
 	---- 0         <- code id
 	---- HEADER    <- value for this code
 	***************************************************************************/
-	LinePair WriteLinePair();
+	bool WriteLinePair(int code, String value);
 
 	//main loop for writing
 	bool Save(String path);
-
-	//writers
-	void WriteTemplate();
-	void WriteMesh();
-	void WritePolyline();
-	void WritePoint();
 
 	//setters
 	void SetMesh(VariantMap mesh);
 	void SetMesh(VariantVector meshes);
 	void SetPolyline(VariantMap polyline);
 	void SetPolyline(VariantVector polylines);
-	void SetPoint(Vector3 point);
+	void SetPoint(Vector3 point, String layer = "Default");
 	void SetPoints(Vector<Vector3> points);
 
 
 protected:
 
-	File* dest;
+	File* dest_;
 
 	//These are the things we want. 
 	VariantVector meshes_;
 	VariantVector polylines_;
 	VariantVector points_;
+
+	//writers
+	void WriteHeader();
+	void WriteEntities();
+	void WriteMesh(int id);
+	void WritePolyline(int id);
+	void WritePoint(int id);
 
 };

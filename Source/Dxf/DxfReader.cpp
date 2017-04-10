@@ -341,9 +341,6 @@ void DxfReader::ParseInsertion()
 	}
 
 	//done with parsing the insertion. Push to stack
-	//VariantVector* insertions = (*currBlock)["Insertions"].GetVariantVectorPtr();
-	//assert(insertions);
-	//insertions->Push(insertion);
 	insertions_.Push(insertion);
 }
 
@@ -409,11 +406,6 @@ void DxfReader::ParsePolyLine()
 		//recurse
 		nextPair = GetNextLinePair();
 	}
-
-	//add to line list
-	//VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
-	//assert(lines);
-	//lines->Push(polyline);
 
 	//if polyline has indices, then it is a mesh. Otherwise it is just a polyline
 	bool hasIndices = polyline["Faces"].GetVariantVector().Size() > 3 ? true : false;
@@ -492,10 +484,7 @@ void DxfReader::ParsePoint()
 
 	point["Position"] = v;
 
-	//VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
-	//assert(lines);
-	//lines->Push(point);
-
+	//push to list
 	points_.Push(point);
 }
 
@@ -699,12 +688,7 @@ void DxfReader::Parse3DFace()
 
 	polyline["Vertices"] = pVerts;
 
-	//add to line list
-	//VariantVector* lines = (*currBlock)["Lines"].GetVariantVectorPtr();
-	//assert(lines);
-	//lines->Push(polyline);
-
-
+	//push to list
 	polylines_.Push(polyline);
 }
 

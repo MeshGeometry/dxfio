@@ -10,6 +10,7 @@
 #include "IO/FileSystem.h"
 
 #include "Dxf/DxfReader.h"
+#include "Dxf/DxfWriter.h"
 
 using namespace Urho3D;
 
@@ -187,5 +188,15 @@ TEST(Basic, ReadLines)
 
 	pathOut = "../../Test/points_out.txt";
 	SaveRaw(pathOut, reader->GetPoints());
+
+}
+
+TEST(Basic, Write)
+{
+	DxfWriter* writer = new DxfWriter(ctx);
+
+	writer->SetPoint(Vector3(1.0, 2.0, 3.0));
+	writer->Save("../../Test/DxfWriterTest.dxf");
+
 
 }
