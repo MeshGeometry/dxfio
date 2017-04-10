@@ -2,7 +2,7 @@
 #include "Core/StringUtils.h"
 #include "IO/Log.h"
 
-DxfWriter::DxfWriter(Context* context) : Object(context)
+DxfWriter::DxfWriter(Context* context, String path) : Object(context)
 {
 
 }
