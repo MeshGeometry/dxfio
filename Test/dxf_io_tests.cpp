@@ -197,7 +197,6 @@ TEST(Basic, Write)
 
 	writer->SetPoint(Vector3(1.0, 2.0, 3.0));
 
-
 	Vector<Vector3> pVerts;
 	pVerts.Push(Vector3(0, 0, 0));
 	pVerts.Push(Vector3(1, 0, 0));
@@ -206,6 +205,18 @@ TEST(Basic, Write)
 	pVerts.Push(Vector3(0, 0, 0));
 
 	writer->SetPolyline(pVerts);
+
+	Vector<Vector3> mVerts;
+	mVerts.Push(Vector3(0, 0, 0));
+	mVerts.Push(Vector3(1, 0, 2));
+	mVerts.Push(Vector3(0, 1, 0));
+
+	Vector<int> indices;
+	indices.Push(0);
+	indices.Push(1);
+	indices.Push(2);
+
+	writer->SetMesh(mVerts, indices, "MyMeshLayer");
 
 	writer->Save("../../Test/DxfWriterTest.dxf");
 

@@ -30,12 +30,12 @@ public:
 	bool Save(String path);
 
 	//setters
-	void SetMesh(VariantMap mesh, String layer = "Default");
-	void SetMesh(VariantVector meshes);
+	void SetMesh(Vector<Vector3> vertices, Vector<int> indices, String layer = "Default");
+	void SetMesh(VariantVector meshes, String layer = "Default");
 	void SetPolyline(Vector<Vector3> vertices, String layer = "Default");
-	void SetPolyline(VariantVector polylines);
+	//void SetPolyline(VariantVector polylines, String layer = "Default");
 	void SetPoint(Vector3 point, String layer = "Default");
-	void SetPoints(Vector<Vector3> points);
+	void SetPoints(Vector<Vector3> points, String layer = "Default");
 
 
 protected:
@@ -53,7 +53,7 @@ protected:
 	void WriteMesh(int id);
 	void WritePolyline(int id);
 	void WritePoint(int id);
-	void WriteVertex(Vector3 vertex);
-	void WriteIndices(int a, int b, int c);
+	void WriteVertex(Vector3 vertex, String layer);
+	void WriteIndices(int a, int b, int c, String layer);
 
 };
