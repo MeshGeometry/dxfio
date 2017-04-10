@@ -124,6 +124,39 @@ void DxfWriter::WriteEntities()
 	WriteLinePair(0, "ENDSEC");
 }
 
+void DxfWriter::WriteVertex(Vector3 vertex)
+{
+	WriteLinePair(0, "VERTEX");
+	//WriteLinePair(100, "AcDbEntity");
+	//WriteLinePair(100, "AcDbVertex");
+	WriteLinePair(10, String(vertex.x_));
+	WriteLinePair(20, String(vertex.y_));
+	WriteLinePair(30, String(vertex.z_));
+	//WriteLinePair(70, String(192)); //flag that specifies this as mesh or polygon vertex
+
+}
+
+void DxfWriter::WriteIndices(int a, int b, int c)
+{
+	//face indices are stored as a vertex structure.
+	//here we zero out the position, and just write the indices.
+
+	WriteLinePair(0, "VERTEX");
+	//WriteLinePair(100, "AcDbEntity");
+	//WriteLinePair(100, "AcDbVertex");
+	WriteLinePair(10, String(0.0));
+	WriteLinePair(20, String(0.0));
+	WriteLinePair(30, String(0.0));
+
+	//the indices
+	WriteLinePair(71, String(a));
+	WriteLinePair(72, String(b));
+	WriteLinePair(73, String(c));
+
+	//keep the right flag
+	//WriteLinePair(70, String(192)); //flag that specifies this as mesh or polygon vertex
+}
+
 void DxfWriter::WriteMesh(int id)
 {
 
@@ -131,7 +164,45 @@ void DxfWriter::WriteMesh(int id)
 
 void DxfWriter::WritePolyline(int id)
 {
+	if (id >= polylines_.Size())
+		return;
 
+	VariantMap* pMap = polylines_[id].GetVariantMapPtr();
+	if ((*pMap).Keys().Contains("000_TYPE")) {
+		if ((*pMap)["000_TYPE"].GetString() == "POLYLINE")
+		{
+			int flags = (*pMap).Keys().Contains("Flags") ? (*pMap)["Flags"].GetInt() : 8;
+			String layer = (*pMap).Keys().Contains("Layer") ? (*pMap)["Layer"].GetString() : "Default";
+			VariantVector* verts = (*pMap)["Vertices"].GetVariantVectorPtr();
+
+			//make sure that we have some vertices
+			if (!verts) {
+				return;
+			}
+
+			//write header
+			WriteLinePair(0, "POLYLINE");
+			//WriteLinePair(100, "AcDbEntity");
+			//WriteLinePair(100, "AcDb2dPolyline");
+			WriteLinePair(8, layer);
+
+
+			WriteLinePair(10, String(0.0));
+			WriteLinePair(20, String(0.0));
+			WriteLinePair(30, String(0.0));
+
+			WriteLinePair(70, String(flags));
+
+			//write vertices
+			for (int i = 0; i < verts->Size(); i++)
+			{
+				Vector3 v = verts->At(i).GetVector3();
+				WriteVertex(v);
+			}
+
+			WriteLinePair(0, "SEQEND");
+		}
+	}
 }
 
 void DxfWriter::WritePoint(int id)
@@ -150,9 +221,9 @@ void DxfWriter::WritePoint(int id)
 
 			//actually write
 			WriteLinePair(0, "POINT");
-			WriteLinePair(100, "AcDbEntity");
+			//WriteLinePair(100, "AcDbEntity");
+			//WriteLinePair(100, "AcDbPoint");
 			WriteLinePair(8, layer);
-			WriteLinePair(100, "AcDbPoint");
 			WriteLinePair(10, String(v.x_));
 			WriteLinePair(20, String(v.y_));
 			WriteLinePair(30, String(v.z_));
@@ -161,7 +232,7 @@ void DxfWriter::WritePoint(int id)
 }
 
 //setters
-void DxfWriter::SetMesh(VariantMap mesh)
+void DxfWriter::SetMesh(VariantMap mesh, String layer)
 {
 
 }
@@ -171,8 +242,22 @@ void DxfWriter::SetMesh(VariantVector meshes)
 
 }
 
-void DxfWriter::SetPolyline(VariantMap polyline)
+void DxfWriter::SetPolyline(Vector<Vector3> vertices, String layer)
 {
+	VariantMap pMap;
+	pMap["000_TYPE"] = "POLYLINE";
+	pMap["Layer"] = layer;
+
+	VariantVector verts;
+	verts.Resize(vertices.Size());
+	for (int i = 0; i < vertices.Size(); i++) {
+		verts[i] = vertices[i];
+	}
+
+	pMap["Vertices"] = verts;
+	pMap["Flags"] = 8; //only spec that this is a 3d polyline.
+
+	polylines_.Push(pMap);
 
 }
 void DxfWriter::SetPolyline(VariantVector polylines)

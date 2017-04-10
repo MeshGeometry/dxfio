@@ -196,7 +196,17 @@ TEST(Basic, Write)
 	DxfWriter* writer = new DxfWriter(ctx);
 
 	writer->SetPoint(Vector3(1.0, 2.0, 3.0));
-	writer->Save("../../Test/DxfWriterTest.dxf");
 
+
+	Vector<Vector3> pVerts;
+	pVerts.Push(Vector3(0, 0, 0));
+	pVerts.Push(Vector3(1, 0, 0));
+	pVerts.Push(Vector3(0, 1, 1));
+	pVerts.Push(Vector3(0, 0, 1));
+	pVerts.Push(Vector3(0, 0, 0));
+
+	writer->SetPolyline(pVerts);
+
+	writer->Save("../../Test/DxfWriterTest.dxf");
 
 }
