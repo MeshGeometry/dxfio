@@ -42,7 +42,26 @@ bool DxfWriter::WriteLinePair(int code, String value)
 	if (!dest_)
 		return false;
 
-	dest_->WriteLine(String(code));
+	String codeString = "   "; //always write three digits with spaces for unused.
+	String incoming = String(code);
+
+	switch (incoming.Length())
+	{
+	case 1:
+		codeString[2] = incoming[0];
+		break;
+	case 2:
+		codeString[1] = incoming[0];
+		codeString[2] = incoming[1];
+		break;
+	case 3:
+		codeString[0] = incoming[0];
+		codeString[1] = incoming[1];
+		codeString[2] = incoming[2];
+		break;
+	}
+
+	dest_->WriteLine(codeString);
 	dest_->WriteLine(value);
 
 	return true;
@@ -56,10 +75,20 @@ void DxfWriter::WriteHeader()
 	WriteLinePair(2, "HEADER");
 
 	WriteLinePair(9, "$ACADVER");
-	WriteLinePair(1, "AC1018");
+	WriteLinePair(1, "AC1009");
 
 
 	WriteLinePair(9, "$INSBASE");
+	WriteLinePair(10, String(0.0));
+	WriteLinePair(20, String(0.0));
+	WriteLinePair(30, String(0.0));
+
+	WriteLinePair(9, "$EXTMIN");
+	WriteLinePair(10, String(0.0));
+	WriteLinePair(20, String(0.0));
+	WriteLinePair(30, String(0.0));
+
+	WriteLinePair(9, "$EXTMAX");
 	WriteLinePair(10, String(0.0));
 	WriteLinePair(20, String(0.0));
 	WriteLinePair(30, String(0.0));
@@ -121,7 +150,9 @@ void DxfWriter::WritePoint(int id)
 
 			//actually write
 			WriteLinePair(0, "POINT");
+			WriteLinePair(100, "AcDbEntity");
 			WriteLinePair(8, layer);
+			WriteLinePair(100, "AcDbPoint");
 			WriteLinePair(10, String(v.x_));
 			WriteLinePair(20, String(v.y_));
 			WriteLinePair(30, String(v.z_));
