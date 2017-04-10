@@ -42,6 +42,7 @@ public:
 	void ParseBlock();
 	void ParseInsertion();
 	void ParsePolyLine();
+	void ParseLWPolyLine();
 	void ParsePolyLineVertex(VariantMap& polyline);
 	void ParsePoint();
 	void Parse3DFace();

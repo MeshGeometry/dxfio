@@ -347,6 +347,81 @@ void DxfReader::ParseInsertion()
 	insertions_.Push(insertion);
 }
 
+void DxfReader::ParseLWPolyLine()
+{
+	URHO3D_LOGINFO("Parseing lwpolyline...");
+
+	nextPair = GetNextLinePair();
+
+	//get reference to last block
+	VariantMap* currBlock = blocks_.Back().GetVariantMapPtr();
+
+	//store lwpolyline data in variantmap
+	VariantMap lwpolyline;
+	lwpolyline["000_TYPE"] = "LWPOLYLINE";
+	lwpolyline["Vertices"] = VariantVector();
+	lwpolyline["Faces"] = VariantVector();
+
+	while (!IsEnd(nextPair) && !Is(nextPair, 0, "ENDSEC")) {
+
+		// vertex part omitted for now
+
+		switch (nextPair.first_) {
+		// Common Group Codes for Entities
+		case 8:
+			lwpolyline["Layer"] = nextPair.second_.GetString();
+			break;
+		// LWPolyLine codes
+		case 100:
+			lwpolyline["SubclassMarker"] = nextPair.second_.GetString();
+			break;
+		case 90:
+			lwpolyline["NumVertices"] = ToUInt(nextPair.second_.GetString());
+			break;
+		case 70:
+			lwpolyline["PolylineFlag"] = ToUInt(nextPair.second_.GetString());
+			break;
+		case 43:
+			lwpolyline["ConstantWidth"] = ToUInt(nextPair.second_.GetString());
+			break;
+		case 38:
+			lwpolyline["Elevantion"] = ToFloat(nextPair.second_.GetString());
+			break;
+		case 39:
+			lwpolyline["Thickness"] = ToFloat(nextPair.second_.GetString());
+			break;
+		case 10:
+			// Vertex coordinates (in OCS), multiple entries; ...
+			break;
+		case 20:
+			// ?
+			break;
+		case 91:
+			// Vertex identifier
+			break;
+		case 40:
+			lwpolyline["StartingWidth"] = ToFloat(nextPair.second_.GetString());
+			break;
+		case 41:
+			// Bulge (multiple entries; ...
+			break;
+		case 210:
+			lwpolyline["ExtrusionDirection_X"] = ToFloat(nextPair.second_.GetString());
+			break;
+		case 220:
+			lwpolyline["ExtrusionDirection_Y"] = ToFloat(nextPair.second_.GetString());
+			break;
+		case 230:
+			lwpolyline["ExtrusionDirection_Z"] = ToFloat(nextPair.second_.GetString());
+			break;
+		default:
+			break;
+		}
+
+		nextPair = GetNextLinePair();
+	}
+}
+
 void DxfReader::ParsePolyLine()
 {
 	URHO3D_LOGINFO("Parsing polyline...");

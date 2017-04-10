@@ -1,6 +1,6 @@
 #include "DxfWriter.h"
 
-DxfWriter::DxfWriter(Context* context) : Object(context)
+DxfWriter::DxfWriter(Context* context, String path) : Object(context)
 {
 
 }
