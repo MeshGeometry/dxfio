@@ -40,8 +40,6 @@ public:
 
 protected:
 
-	File* dest_;
-
 	//These are the things we want. 
 	VariantVector meshes_;
 	VariantVector polylines_;

@@ -2,6 +2,11 @@
 #include "Core/StringUtils.h"
 #include "IO/Log.h"
 
+namespace {
+
+	File* dest_;
+}
+
 DxfWriter::DxfWriter(Context* context) : Object(context)
 {
 

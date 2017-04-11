@@ -61,8 +61,6 @@ public:
 
 protected:
 
-	File* source_;
-
 	//Blocks are logical chunks of a drawing (dxf) file.
 	//Often, they just define base points for model space, paper space by specifying a base point, scale.
 	//However, they CAN have entitites (i.e. polylines, points, etc) embedded in them. I have not seen this in any test files,
