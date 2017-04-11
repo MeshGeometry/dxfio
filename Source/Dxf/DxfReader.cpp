@@ -2,8 +2,13 @@
 #include "Core/StringUtils.h"
 #include "IO/Log.h"
 
-int currLineNumber = 0;
-LinePair nextPair;
+namespace
+{
+	int currLineNumber = 0;
+	LinePair nextPair;
+	File* source_;
+}
+
 
 DxfReader::DxfReader(Context* context, String path) : Object(context)
 {
